@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>מערכת ניהול הושבה - עם אקסל</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --primary: #4a6fa5;
+      --primary-dark: #385d8a;
+      --secondary: #e8f4fc;
+      --success: #28a745;
+      --danger: #dc3545;
+      --warning: #ffc107;
+      --light: #f8f9fa;
+      --dark: #343a40;
+      --border: #dee2e6;
+    }
+        
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+    }
+        
+    body {
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+      direction: rtl;
+    }
+        
+    /* מסך התחברות */
+    .login-screen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+        
+    .login-container {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+    }
+        
+    .login-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+        
+    .login-header h1 {
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+        
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+        
+    .form-group {
+      margin-bottom: 15px;
+    }
+        
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--dark);
+    }
+        
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 16px;
+      transition: border 0.3s;
+    }
+        
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.2);
+    }
+        
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+        
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+        
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+        
+    .btn-success {
+      background-color: var(--success);
+      color: white;
+    }
+        
+    .btn-danger {
+      background-color: var(--danger);
+      color: white;
+    }
+        
+    .btn-warning {
+      background-color: var(--warning);
+      color: black;
+    }
+        
+    /* עיצוב ראשי למערכת */
+    .header {
+      background-color: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 15px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+        
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+        
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+        
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+        
+    .event-selector {
+      min-width: 250px;
+    }
+        
+    .main-container {
+      max-width: 1400px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+        
+    /* דשבורד מנהל */
+    .admin-dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+        
+    .dashboard-card {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+        
+    .dashboard-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      border-color: var(--primary);
+    }
+        
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+        
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+        
+    .card-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+        
+    .stat-item {
+      text-align: center;
+      padding: 10px;
+      background: var(--light);
+      border-radius: 6px;
+    }
+        
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+        
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+        
+    /* ניווט */
+    .nav-tabs {
+      display: flex;
+      background-color: var(--light);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+        
+    .nav-tab {
+      padding: 15px 25px;
+      cursor: pointer;
+      border-right: 1px solid var(--border);
+      transition: all 0.3s;
+      font-weight: 500;
+      color: var(--dark);
+    }
+        
+    .nav-tab:last-child {
+      border-right: none;
+    }
+        
+    .nav-tab.active {
+      background-color: var(--primary);
+      color: white;
+    }
+        
+    /* תוכן טאבים */
+    .tab-content {
+      display: none;
+      background-color: white;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      margin-bottom: 30px;
+    }
+        
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.5s;
+    }
+        
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+        
+    /* טבלאות */
+    .table-container {
+      overflow-x: auto;
+      margin-top: 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+        
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+    }
+        
+    th, td {
+      padding: 12px 15px;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+        
+    th {
+      background-color: var(--secondary);
+      font-weight: 600;
+      color: var(--primary-dark);
+      position: sticky;
+      top: 0;
+    }
+        
+    /* תצוגת שולחנות */
+    .tables-map {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+        
+    .table-item {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      border: 2px solid var(--border);
+      transition: all 0.3s;
+    }
+        
+    .table-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+        
+    .table-number {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+        
+    /* פופאפים ומודלים */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+        
+    .modal.active {
+      display: flex;
+    }
+        
+    .modal-content {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+        
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border);
+    }
+        
+    .modal-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+        
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+        
+    .close-btn:hover {
+      color: var(--danger);
+    }
+        
+    /* עזרים */
+    .text-center { text-align: center; }
+    .mt-20 { margin-top: 20px; }
+    .mb-20 { margin-bottom: 20px; }
+    .d-none { display: none; }
+    .d-flex { display: flex; }
+    .align-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-10 { gap: 10px; }
+    .gap-20 { gap: 20px; }
+    .w-100 { width: 100%; }
+        
+    /* תגיות */
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-left: 5px;
+    }
+        
+    .tag-primary { background: #e8f4fc; color: var(--primary); }
+    .tag-success { background: #d4edda; color: #155724; }
+    .tag-warning { background: #fff3cd; color: #856404; }
+    .tag-danger { background: #f8d7da; color: #721c24; }
+        
+    /* רשימת אירועים */
+    .events-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+        
+    .event-card {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+        
+    .event-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      border-color: var(--primary);
+    }
+        
+    .event-card.active {
+      border-color: var(--primary);
+      background: #f8fafc;
+    }
+        
+    .event-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+        
+    .event-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+        
+    .event-date {
+      color: #666;
+      font-size: 14px;
+    }
+        
+    /* הודעות */
+    .alert {
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+        
+    .alert-success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+        
+    .alert-info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+        
+    .alert-warning {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+        
+    /* אזור העלאת קבצים */
+    .file-upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 40px 20px;
+      text-align: center;
+      margin: 20px 0;
+      transition: all 0.3s;
+      cursor: pointer;
+      background: white;
+    }
+        
+    .file-upload-area:hover {
+      border-color: var(--primary);
+      background: var(--secondary);
+    }
+        
+    .file-upload-area.dragover {
+      border-color: var(--success);
+      background: #d4edda;
+    }
+        
+    .file-icon {
+      font-size: 48px;
+      color: var(--primary);
+      margin-bottom: 15px;
+    }
+        
+    .file-info {
+      color: #666;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+        
+    .file-preview {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 15px;
+      margin-top: 15px;
+      background: white;
+    }
+        
+    /* תצוגה רספונסיבית */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 15px;
+      }
+            
+      .header-left, .header-right {
+        width: 100%;
+        justify-content: center;
+      }
+            
+      .event-selector {
+        width: 100%;
+      }
+            
+      .nav-tabs {
+        flex-direction: column;
+      }
+            
+      .nav-tab {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+            
+      .admin-dashboard, .events-list {
+        grid-template-columns: 1fr;
+      }
+            
+      .modal-content {
+        width: 95%;
+        padding: 20px;
+      }
+    }
+        
+    /* טבלת תצוגה מקדימה */
+    .preview-table {
+      font-size: 14px;
+    }
+        
+    .preview-table th {
+      background: #f8f9fa;
+      position: static;
+    }
+        
+    .preview-table tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+        
+    .small-input {
+      width: 60px;
+      padding: 6px;
+      text-align: center;
+    }
+        
+    /* תוויות וסטטוס */
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+        
+    .status-arrived {
+      background: #d4edda;
+      color: #155724;
+    }
+        
+    .status-not-arrived {
+      background: #f8d7da;
+      color: #721c24;
+    }
+        
+    .status-partial {
+      background: #fff3cd;
+      color: #856404;
+    }
+        
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 14px;
+    }
+        
+    /* שיפורים נוספים */
+    .guest-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+        
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+        
+    .summary-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+  <!-- מסך התחברות -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-container">
+      <div class="login-header">
+        <h1><i class="fas fa-chair"></i> מערכת ניהול הושבה</h1>
+        <p>התחבר כמנהל או כזוג מארגן</p>
+      </div>
+            
+      <div class="login-form">
+        <div class="form-group">
+          <label for="loginType">סוג משתמש</label>
+          <select id="loginType" class="login-input">
+            <option value="manager">מנהל המערכת</option>
+            <option value="couple">זוג מארגן</option>
+          </select>
+        </div>
+                
+        <div class="form-group" id="eventCodeGroup" style="display: none;">
+          <label for="eventCode">קוד אירוע</label>
+          <input type="text" id="eventCode" class="login-input" placeholder="הכנס קוד אירוע שקיבלת">
+        </div>
+                
+        <div class="form-group" id="managerPasswordGroup">
+          <label for="managerPassword">סיסמת מנהל</label>
+          <input type="password" id="managerPassword" class="login-input" placeholder="הכנס סיסמת מנהל">
+        </div>
+                
+        <div class="form-group" id="createEventGroup" style="display: none;">
+          <label for="coupleNames">שמות הזוג המארגן</label>
+          <input type="text" id="coupleNames" class="login-input" placeholder="לדוגמה: ניר ורון">
+        </div>
+                
+        <button id="loginBtn" class="btn btn-primary w-100">
+          <i class="fas fa-sign-in-alt"></i> התחבר
+        </button>
+                
+        <div class="text-center mt-20">
+          <p style="color: #666; font-size: 14px;">
+            <i class="fas fa-info-circle"></i>
+            המנהל יכול לראות ולנהל את כל האירועים
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+    
+  <!-- מסך מנהל -->
+  <div id="adminScreen" class="d-none">
+    <div class="header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1><i class="fas fa-crown"></i> מנהל המערכת</h1>
+        </div>
+        <div class="header-right">
+          <select id="eventSelector" class="event-selector">
+            <option value="">בחר אירוע לניהול...</option>
+            <!-- האירועים יטענו כאן -->
+          </select>
+          <button id="newEventBtn" class="btn btn-primary">
+            <i class="fas fa-plus"></i> אירוע חדש
+          </button>
+          <button id="logoutBtn" class="btn btn-danger">
+            <i class="fas fa-sign-out-alt"></i> יציאה
+          </button>
+        </div>
+      </div>
+    </div>
+        
+    <div class="main-container">
+      <div id="adminDashboard" class="tab-content active">
+        <h2 class="mb-20">דשבורד מנהל - סקירה כללית</h2>
+                
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i>
+          <div>ברוך הבא למנהל המערכת. כאן תוכל לנהל את כל האירועים, לראות סטטיסטיקות ולעבור בין אירועים שונים.</div>
+        </div>
+                
+        <div class="admin-dashboard" id="eventsDashboard">
+          <!-- כרטיסי האירועים יטענו כאן -->
+        </div>
+                
+        <div class="mt-20">
+          <h3 class="mb-20">פעולות מהירות</h3>
+          <div class="d-flex gap-10">
+            <button id="viewAllEventsBtn" class="btn btn-primary">
+              <i class="fas fa-list"></i> הצג כל האירועים
+            </button>
+            <button id="createQuickEventBtn" class="btn btn-success">
+              <i class="fas fa-bolt"></i> צור אירוע מהיר
+            </button>
+            <button id="exportAllDataBtn" class="btn btn-warning">
+              <i class="fas fa-download"></i> ייצא כל הנתונים
+            </button>
+          </div>
+        </div>
+      </div>
+            
+      <div id="eventManagement" class="tab-content">
+        <h2 class="mb-20" id="currentEventTitle">ניהול אירוע</h2>
+                
+        <div class="nav-tabs" id="eventTabs">
+          <div class="nav-tab active" data-tab="eventSetup">הגדרת אירוע</div>
+          <div class="nav-tab" data-tab="eventGuests">ניהול אורחים</div>
+          <div class="nav-tab" data-tab="eventTables">מפת שולחנות</div>
+          <div class="nav-tab" data-tab="eventCheckin">רישום הגעה</div>
+          <div class="nav-tab" data-tab="eventStats">סיכומים</div>
+        </div>
+                
+        <!-- תוכן הטאבים של האירוע יוטען כאן דינמית -->
+        <div id="eventTabContent"></div>
+      </div>
+    </div>
+  </div>
+    
+  <!-- מסך זוג מארגן -->
+  <div id="coupleScreen" class="d-none">
+    <div class="header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1><i class="fas fa-heart"></i> <span id="coupleEventName">האירוע שלי</span></h1>
+          <div class="tag tag-primary" id="coupleEventCode">קוד: ...</div>
+        </div>
+        <div class="header-right">
+          <button id="coupleLogoutBtn" class="btn btn-danger">
+            <i class="fas fa-sign-out-alt"></i> יציאה
+          </button>
+        </div>
+      </div>
+    </div>
+        
+    <div class="main-container">
+      <div class="nav-tabs" id="coupleTabs">
+        <div class="nav-tab active" data-tab="setup">הגדרת אירוע</div>
+        <div class="nav-tab" data-tab="guests">ניהול אורחים</div>
+        <div class="nav-tab" data-tab="tables">מפת שולחנות</div>
+        <div class="nav-tab" data-tab="checkin">רישום הגעה</div>
+        <div class="nav-tab" data-tab="stats">סיכומים</div>
+      </div>
+            
+      <!-- תוכן הטאבים יוטען כאן דינמית -->
+      <div id="coupleTabContent"></div>
+    </div>
+  </div>
+    
+  <!-- מודל יצירת אירוע חדש -->
+  <div id="newEventModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">יצירת אירוע חדש</div>
+        <button class="close-btn" id="closeNewEventModal">&times;</button>
+      </div>
+            
+      <div class="form-group">
+        <label for="newEventCoupleNames">שמות הזוג המארגן</label>
+        <input type="text" id="newEventCoupleNames" placeholder="לדוגמה: זיו ודניאל" required>
+      </div>
+            
+      <div class="form-group">
+        <label for="newEventName">שם האירוע</label>
+        <input type="text" id="newEventName" placeholder="לדוגמה: חתונת זיו ודניאל" required>
+      </div>
+            
+      <div class="form-group">
+        <label for="newEventDate">תאריך האירוע</label>
+        <input type="date" id="newEventDate" required>
+      </div>
+            
+      <div class="form-group">
+        <label for="newEventType">סוג האירוע</label>
+        <select id="newEventType">
+          <option value="חתונה">חתונה</option>
+          <option value="בר/בת מצווה">בר/בת מצווה</option>
+          <option value="יום הולדת">יום הולדת</option>
+          <option value="אירוע עסקי">אירוע עסקי</option>
+          <option value="אחר">אחר</option>
+        </select>
+      </div>
+            
+      <div class="form-group">
+        <label for="newEventTables">מספר שולחנות מוצע</label>
+        <input type="number" id="newEventTables" min="1" max="100" value="15">
+      </div>
+            
+      <div class="d-flex justify-between mt-20">
+        <button id="cancelNewEventBtn" class="btn btn-danger">ביטול</button>
+        <button id="createEventBtn" class="btn btn-success">צור אירוע</button>
+      </div>
+    </div>
+  </div>
+    
+  <!-- מודל העלאת אקסל -->
+  <div id="excelUploadModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">העלאת קובץ אקסל/CSV</div>
+        <button class="close-btn" id="closeExcelModal">&times;</button>
+      </div>
+            
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        <div>העלה קובץ אקסל או CSV עם רשימת האורחים. הקובץ צריך לכלול את העמודות: שם, טלפון, כמות מוזמנים, קבוצה (לא חובה), הערות (לא חובה).</div>
+      </div>
+            
+      <div class="file-upload-area" id="excelUploadArea">
+        <div class="file-icon">
+          <i class="fas fa-file-excel"></i>
+        </div>
+        <h3>גרור קובץ לכאן או לחץ לבחירה</h3>
+        <p class="file-info">תומך בקובצי Excel (.xlsx, .xls) ו-CSV (.csv)</p>
+        <input type="file" id="excelFileInput" accept=".csv,.xlsx,.xls" style="display: none;">
+        <button class="btn btn-primary mt-10" id="browseExcelBtn">
+          <i class="fas fa-folder-open"></i> בחר קובץ
+        </button>
+      </div>
+            
+      <div id="excelPreview" class="file-preview">
+        <div class="text-center" style="padding: 30px; color: #999;">
+          <i class="fas fa-table" style="font-size: 36px; margin-bottom: 10px;"></i>
+          <p>טען קובץ כדי לראות תצוגה מקדימה</p>
+        </div>
+      </div>
+            
+      <div class="form-group mt-20">
+        <label>אפשרויות ייבוא</label>
+        <div>
+          <input type="checkbox" id="overwriteData" checked>
+          <label for="overwriteData" style="display: inline; margin-right: 10px;">החלף את כל האורחים הקיימים</label>
+        </div>
+        <div>
+          <input type="checkbox" id="keepAssignments">
+          <label for="keepAssignments" style="display: inline; margin-right: 10px;">שמור שיבוצים קיימים לאורחים בעלי אותו שם</label>
+        </div>
+      </div>
+            
+      <div class="d-flex justify-between mt-20">
+        <button id="cancelExcelBtn" class="btn btn-danger">ביטול</button>
+        <button id="importExcelBtn" class="btn btn-success" disabled>
+          <i class="fas fa-upload"></i> יייבא נתונים
+        </button>
+      </div>
+    </div>
+  </div>
+    
+  <!-- מודל הוספת אורח ידנית -->
+  <div id="addGuestModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">הוספת אורח חדש</div>
+        <button class="close-btn" id="closeAddGuestModal">&times;</button>
+      </div>
+            
+      <div class="form-group">
+        <label for="guestName">שם האורח/משפחה</label>
+        <input type="text" id="guestName" placeholder="לדוגמה: משפחת כהן">
+      </div>
+            
+      <div class="form-group">
+        <label for="guestPhone">טלפון</label>
+        <input type="tel" id="guestPhone" placeholder="לדוגמה: 050-1234567">
+      </div>
+            
+      <div class="d-flex gap-10">
+        <div class="form-group" style="flex: 1;">
+          <label for="guestInvited">כמות מוזמנים</label>
+          <input type="number" id="guestInvited" min="1" value="2">
+        </div>
+                
+        <div class="form-group" style="flex: 1;">
+          <label for="guestGroup">קבוצה</label>
+          <select id="guestGroup">
+            <option value="משפחה">משפחה</option>
+            <option value="חברים">חברים</option>
+            <option value="עמיתים לעבודה">עמיתים לעבודה</option>
+            <option value="אחר">אחר</option>
+          </select>
+        </div>
+      </div>
+            
+      <div class="form-group">
+        <label for="guestNotes">הערות</label>
+        <textarea id="guestNotes" rows="2" placeholder="אלרגיות, הערות מיוחדות..."></textarea>
+      </div>
+            
+      <div class="d-flex justify-between mt-20">
+        <button id="cancelGuestBtn" class="btn btn-danger">ביטול</button>
+        <button id="saveGuestBtn" class="btn btn-success">שמור אורח</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // מערכת ניהול אירועים עם ייבוא/ייצוא אקסל
+    const APP_VERSION = '1.2';
+    const MANAGER_PASSWORD = 'admin123'; // סיסמת מנהל
+        
+    // נתונים גלובליים
+    let currentUser = null;
+    let currentEvent = null;
+    let allEvents = [];
+    let tempImportedGuests = [];
+        
+    // טען את כל האירועים מה-localStorage
+    function loadAllEvents() {
+      const eventsData = localStorage.getItem('allEventsData');
+      if (eventsData) {
+        allEvents = JSON.parse(eventsData);
+      } else {
+        allEvents = [];
+        // צור כמה אירועים לדוגמה
+        createSampleEvents();
+      }
+      return allEvents;
+    }
+        
+    // שמור את כל האירועים
+    function saveAllEvents() {
+      localStorage.setItem('allEventsData', JSON.stringify(allEvents));
+    }
+        
+    function createSampleEvents() {
+      const sample = {
+        id: 'evt-' + Date.now(),
+        name: 'אירוע דוגמה - חתונה',
+        date: new Date().toISOString().split('T')[0],
+        couple: 'זיו ודניאל',
+        code: 'ABC123',
+        tables: 12,
+        guests: [
+          { id: 'g1', name: 'משפחת כהן', phone: '050-1111111', invited: 4, assignedTable: 1 },
+          { id: 'g2', name: 'משפחת לוי', phone: '050-2222222', invited: 3, assignedTable: 2 }
+        ]
+      };
+      allEvents.push(sample);
+      saveAllEvents();
+    }
+
+      // --- Full client-side app logic (events, guests, import/export) ---
+      function uid(prefix = '') { return prefix + Math.random().toString(36).slice(2,9); }
+
+      function findEventById(id) { return allEvents.find(e => e.id === id); }
+
+      // Render event selector and admin dashboard
+      function renderEventSelector() {
+        const sel = document.getElementById('eventSelector');
+        sel.innerHTML = '<option value="">בחר אירוע לניהול...</option>';
+        allEvents.forEach(ev => {
+          const opt = document.createElement('option');
+          opt.value = ev.id;
+          opt.textContent = `${ev.name} — ${ev.date} — ${ev.couple}`;
+          sel.appendChild(opt);
+        });
+      }
+
+      function renderAdminDashboard() {
+        const container = document.getElementById('eventsDashboard');
+        container.innerHTML = '';
+        allEvents.forEach(ev => {
+          const card = document.createElement('div');
+          card.className = 'dashboard-card';
+          card.innerHTML = `
+            <div class="card-header">
+              <div class="card-title">${escapeHtml(ev.name)}</div>
+              <div>${ev.date}</div>
+            </div>
+            <div>מארגנים: ${escapeHtml(ev.couple)}</div>
+            <div class="card-stats">
+              <div class="stat-item"><div class="stat-value">${ev.guests.length}</div><div class="stat-label">משפחות</div></div>
+              <div class="stat-item"><div class="stat-value">${ev.tables || 0}</div><div class="stat-label">שולחנות</div></div>
+            </div>
+          `;
+          card.addEventListener('click', () => openEvent(ev.id));
+          container.appendChild(card);
+        });
+      }
+
+      function escapeHtml(s){ return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+      // Open event management view
+      function openEvent(eventId) {
+        currentEvent = eventId;
+        const ev = findEventById(eventId);
+        if (!ev) return alert('אירוע לא נמצא');
+        document.getElementById('currentEventTitle').textContent = `ניהול: ${ev.name} — ${ev.couple}`;
+        document.getElementById('adminDashboard').classList.remove('active');
+        document.getElementById('eventManagement').classList.add('active');
+        renderEventTabs(ev);
+      }
+
+      // Render event tabs content
+      function renderEventTabs(ev) {
+        document.querySelectorAll('#eventTabs .nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('#eventTabs .nav-tab[data-tab="eventSetup"]').classList.add('active');
+        const container = document.getElementById('eventTabContent');
+        container.innerHTML = '';
+
+        // Setup tab
+        const setup = document.createElement('div');
+        setup.innerHTML = `
+          <h3>פרטי אירוע</h3>
+          <div class="form-group"><label>שם אירוע</label><input id="evName" value="${escapeHtml(ev.name)}"></div>
+          <div class="form-group"><label>תאריך</label><input id="evDate" type="date" value="${ev.date}"></div>
+          <div class="form-group"><label>זוג מארגן</label><input id="evCouple" value="${escapeHtml(ev.couple)}"></div>
+          <div class="form-group"><label>שולחנות</label><input id="evTables" type="number" value="${ev.tables||0}"></div>
+          <div class="form-actions"><button id="saveEventBtn" class="btn btn-success">שמור פרטי אירוע</button><button id="backToDash" class="btn btn-warning">חזור לדשבורד</button></div>
+          <hr>
+          <h3>ייבוא/ייצוא אורחים</h3>
+          <div class="d-flex gap-10"><button id="openExcelModalBtn" class="btn btn-primary">העלה אקסל</button><button id="exportEventBtn" class="btn btn-warning">ייצא אקסל</button></div>
+        `;
+        container.appendChild(setup);
+
+        // Guests tab initially not shown; create eventGuests content separately
+        setup.querySelector('#saveEventBtn').addEventListener('click', () => {
+          ev.name = document.getElementById('evName').value;
+          ev.date = document.getElementById('evDate').value;
+          ev.couple = document.getElementById('evCouple').value;
+          ev.tables = parseInt(document.getElementById('evTables').value) || 0;
+          saveAllEvents();
+          renderEventSelector();
+          renderAdminDashboard();
+          alert('שמור');
+        });
+        setup.querySelector('#backToDash').addEventListener('click', () => {
+          document.getElementById('eventManagement').classList.remove('active');
+          document.getElementById('adminDashboard').classList.add('active');
+        });
+
+        setup.querySelector('#openExcelModalBtn').addEventListener('click', () => {
+          showExcelModal(ev.id);
+        });
+        setup.querySelector('#exportEventBtn').addEventListener('click', () => {
+          exportEventToExcel(ev);
+        });
+
+        // tabs wiring
+        document.querySelectorAll('#eventTabs .nav-tab').forEach(tab => {
+          tab.onclick = () => {
+            document.querySelectorAll('#eventTabs .nav-tab').forEach(t=>t.classList.remove('active'));
+            tab.classList.add('active');
+            loadEventTab(tab.dataset.tab, ev);
+          };
+        });
+
+        // default load guests tab when clicked
+        loadEventTab('eventSetup', ev);
+      }
+
+      function loadEventTab(tabName, ev) {
+        const container = document.getElementById('eventTabContent');
+        if (tabName === 'eventSetup') return; // already rendered
+        if (tabName === 'eventGuests') {
+          container.innerHTML = '';
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <div class="d-flex justify-between"><h3>אורחים</h3><div><button id="addGuestBtn" class="btn btn-success">הוסף אורח</button><button id="importGuestsBtn" class="btn btn-primary">ייבא אקסל</button></div></div>
+            <div class="table-container"><table id="guestsTable"><thead><tr><th>שם</th><th>טלפון</th><th>מוזמנים</th><th>שולחן</th><th></th></tr></thead><tbody></tbody></table></div>
+          `;
+          container.appendChild(div);
+          renderGuestsTable(ev);
+          div.querySelector('#addGuestBtn').addEventListener('click', showAddGuestModal);
+          div.querySelector('#importGuestsBtn').addEventListener('click', () => showExcelModal(ev.id));
+        }
+        if (tabName === 'eventTables') {
+          container.innerHTML = '<h3>מפת שולחנות (פשוטה)</h3>'; 
+          const map = document.createElement('div'); map.className='tables-map';
+          for(let i=1;i<= (ev.tables||0);i++){ const ti=document.createElement('div'); ti.className='table-item'; ti.innerHTML=`<div class="table-number">שולחן ${i}</div>`; map.appendChild(ti);} container.appendChild(map);
+        }
+        if (tabName === 'eventCheckin') {
+          container.innerHTML = '<h3>רישום הגעה</h3>'; const t=document.createElement('div'); t.innerHTML=`<div class="table-container"><table id="checkinTable"><thead><tr><th>שם</th><th>טלפון</th><th>מוזמנים</th><th>הגיע?</th></tr></thead><tbody></tbody></table></div>`; container.appendChild(t); renderCheckinTable(ev);
+        }
+        if (tabName === 'eventStats') {
+          container.innerHTML = '<h3>סיכומים</h3>'; const arrived = ev.guests.reduce((s,g)=> s + (g.arrived? g.invited:0),0); const invited = ev.guests.reduce((s,g)=>s+ (g.invited||0),0); container.innerHTML += `<div class="summary-card">מוזמנים: ${invited} — מגיעים: ${arrived}</div>`;
+        }
+      }
+
+      function renderGuestsTable(ev) {
+        const tbody = document.querySelector('#guestsTable tbody');
+        tbody.innerHTML = '';
+        ev.guests.forEach(g => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${escapeHtml(g.name)}</td><td>${escapeHtml(g.phone||'')}</td><td>${g.invited||1}</td><td>${g.assignedTable||''}</td><td><button class="btn btn-sm btn-danger">מחק</button></td>`;
+          tr.querySelector('button').addEventListener('click', ()=>{ ev.guests = ev.guests.filter(x=>x.id!==g.id); saveAllEvents(); renderGuestsTable(ev); });
+          tbody.appendChild(tr);
+        });
+      }
+
+      function renderCheckinTable(ev) {
+        const tbody = document.querySelector('#checkinTable tbody');
+        tbody.innerHTML = '';
+        ev.guests.forEach(g => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${escapeHtml(g.name)}</td><td>${escapeHtml(g.phone||'')}</td><td>${g.invited||1}</td><td><input type="checkbox" ${g.arrived ? 'checked':''}></td>`;
+          tr.querySelector('input').addEventListener('change', (e)=>{ g.arrived = e.target.checked; saveAllEvents(); renderCheckinTable(ev); });
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Modal handling
+      function showNewEventModal() { document.getElementById('newEventModal').classList.add('active'); }
+      function closeNewEventModal() { document.getElementById('newEventModal').classList.remove('active'); }
+      function showAddGuestModal() { document.getElementById('addGuestModal').classList.add('active'); }
+      function closeAddGuestModal() { document.getElementById('addGuestModal').classList.remove('active'); }
+
+      document.getElementById('newEventBtn').addEventListener('click', showNewEventModal);
+      document.getElementById('closeNewEventModal').addEventListener('click', closeNewEventModal);
+      document.getElementById('cancelNewEventBtn').addEventListener('click', closeNewEventModal);
+      document.getElementById('createEventBtn').addEventListener('click', () => {
+        const name = document.getElementById('newEventName').value || 'אירוע ללא שם';
+        const couple = document.getElementById('newEventCoupleNames').value || '';
+        const date = document.getElementById('newEventDate').value || new Date().toISOString().split('T')[0];
+        const tables = parseInt(document.getElementById('newEventTables').value) || 0;
+        const ev = { id: uid('evt-'), name, couple, date, tables, guests: [], code: Math.random().toString(36).slice(2,8).toUpperCase() };
+        allEvents.push(ev); saveAllEvents(); renderEventSelector(); renderAdminDashboard(); closeNewEventModal();
+      });
+
+      // Add guest modal
+      document.getElementById('closeAddGuestModal').addEventListener('click', closeAddGuestModal);
+      document.getElementById('cancelGuestBtn').addEventListener('click', closeAddGuestModal);
+      document.getElementById('saveGuestBtn').addEventListener('click', ()=>{
+        const name = document.getElementById('guestName').value || 'לא הוזן שם';
+        const phone = document.getElementById('guestPhone').value || '';
+        const invited = parseInt(document.getElementById('guestInvited').value) || 1;
+        const group = document.getElementById('guestGroup').value || '';
+        const notes = document.getElementById('guestNotes').value || '';
+        const ev = findEventById(currentEvent);
+        if(!ev) return alert('אין אירוע נבחר');
+        ev.guests.push({ id: uid('g-'), name, phone, invited, group, notes });
+        saveAllEvents(); renderGuestsTable(ev); closeAddGuestModal();
+      });
+
+      // Excel upload modal wiring
+      function showExcelModal(evId) { document.getElementById('excelUploadModal').classList.add('active'); document.getElementById('excelFileInput').value = ''; document.getElementById('importExcelBtn').disabled = true; tempImportedGuests = []; }
+      function closeExcelModal(){ document.getElementById('excelUploadModal').classList.remove('active'); document.getElementById('excelPreview').innerHTML = '<div class="text-center" style="padding: 30px; color: #999;"><i class="fas fa-table" style="font-size: 36px; margin-bottom: 10px;"></i><p>טען קובץ כדי לראות תצוגה מקדימה</p></div>'; tempImportedGuests = []; }
+      document.getElementById('closeExcelModal').addEventListener('click', closeExcelModal);
+      document.getElementById('browseExcelBtn').addEventListener('click', ()=>document.getElementById('excelFileInput').click());
+      document.getElementById('excelFileInput').addEventListener('change', handleFileSelect);
+      document.getElementById('importExcelBtn').addEventListener('click', ()=>{
+        if (!tempImportedGuests.length) return alert('אין נתונים לייבא');
+        const ev = findEventById(currentEvent);
+        if(!ev) return alert('אין אירוע נבחר לייבוא');
+        // Option: overwrite or merge
+        const overwrite = document.getElementById('overwriteData').checked;
+        if(overwrite) ev.guests = tempImportedGuests.map(r=>({ id: uid('g-'), name:r.name||'', phone:r.phone||'', invited:parseInt(r.invited)||1, group:r.group||'', notes:r.notes||'' }));
+        else {
+          tempImportedGuests.forEach(r=> ev.guests.push({ id: uid('g-'), name:r.name||'', phone:r.phone||'', invited:parseInt(r.invited)||1 }));
+        }
+        saveAllEvents(); closeExcelModal(); renderGuestsTable(ev);
+      });
+
+      function handleFileSelect(e){
+        const f = e.target.files[0]; if(!f) return;
+        const reader = new FileReader();
+        reader.onload = function(ev){
+          let data = ev.target.result;
+          let workbook = XLSX.read(data, {type: 'binary'});
+          const first = workbook.Sheets[workbook.SheetNames[0]];
+          const json = XLSX.utils.sheet_to_json(first, { defval: '' });
+          tempImportedGuests = json.map(row=>({ name: row['שם'] || row['Name'] || row['name'] || '', phone: row['טלפון']|| row['Phone'] || '', invited: row['כמות מוזמנים']|| row['Invited'] || row['invited'] || 1, group: row['קבוצה']||'', notes: row['הערות']||'' }));
+          renderExcelPreview(tempImportedGuests);
+          document.getElementById('importExcelBtn').disabled = false;
+        };
+        if(f.name.match(/\.xlsx$/i) || f.name.match(/\.xls$/i)) reader.readAsBinaryString(f);
+        else if(f.name.match(/\.csv$/i)) reader.readAsText(f);
+        else alert('פורמט לא נתמך');
+      }
+
+      function renderExcelPreview(rows){
+        const p = document.getElementById('excelPreview');
+        if(!rows || !rows.length) { p.innerHTML = '<div class="text-center" style="padding:20px;color:#999;">אין נתונים</div>'; return; }
+        let tbl = '<table class="preview-table"><thead><tr><th>שם</th><th>טלפון</th><th>מוזמנים</th><th>קבוצה</th></tr></thead><tbody>';
+        rows.slice(0,50).forEach(r=> tbl += `<tr><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.phone)}</td><td>${escapeHtml(r.invited)}</td><td>${escapeHtml(r.group||'')}</td></tr>`);
+        tbl += '</tbody></table>';
+        p.innerHTML = tbl;
+      }
+
+      // Export functions
+      function exportEventToExcel(ev){
+        const header = ['שם','טלפון','מוזמנים','קבוצה','הערות'];
+        const data = ev.guests.map(g=>([g.name||'', g.phone||'', g.invited||1, g.group||'', g.notes||'']));
+        const ws = XLSX.utils.aoa_to_sheet([header, ...data]);
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Guests');
+        XLSX.writeFile(wb, `${ev.name || 'event'}-guests.xlsx`);
+      }
+
+      // Export all data
+      document.getElementById('exportAllDataBtn').addEventListener('click', ()=>{
+        const all = [];
+        allEvents.forEach(ev=> ev.guests.forEach(g => all.push({ event: ev.name, name: g.name, phone: g.phone, invited: g.invited }))); 
+        const ws = XLSX.utils.json_to_sheet(all);
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'AllGuests'); XLSX.writeFile(wb, 'zivevent-all-guests.xlsx');
+      });
+
+      // Initial load & wiring
+      document.addEventListener('DOMContentLoaded', function(){
+        if (!localStorage.getItem('allEventsData')) loadAllEvents(); else loadAllEvents();
+        renderEventSelector(); renderAdminDashboard();
+        document.getElementById('loginBtn').addEventListener('click', () => {
+          const pwd = document.getElementById('managerPassword').value;
+          const type = document.getElementById('loginType').value;
+          if (type === 'manager' && pwd !== MANAGER_PASSWORD) return alert('סיסמה שגויה');
+          currentUser = type;
+          document.getElementById('loginScreen').classList.add('d-none');
+          if (type === 'manager') document.getElementById('adminScreen').classList.remove('d-none');
+          else document.getElementById('coupleScreen').classList.remove('d-none');
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', ()=>{ location.reload(); });
+        document.getElementById('coupleLogoutBtn').addEventListener('click', ()=>{ location.reload(); });
+
+        document.getElementById('eventSelector').addEventListener('change', (e)=>{ if(e.target.value) openEvent(e.target.value); });
+      });
+  </script>
+</body>
+</html>
